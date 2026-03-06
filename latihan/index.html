@@ -1,1 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rikson LIFO Rumbewas - UBD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #f0e9dd; /* Warna dasar krem seperti kain batik */
+            background-image: 
+                radial-gradient(circle at 30% 40%, rgba(180, 130, 80, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 70% 60%, rgba(140, 90, 40, 0.03) 0%, transparent 25%),
+                radial-gradient(circle at 20% 80%, rgba(160, 110, 60, 0.03) 0%, transparent 22%),
+                radial-gradient(circle at 85% 15%, rgba(200, 150, 100, 0.03) 0%, transparent 28%),
+                radial-gradient(circle at 45% 30%, rgba(120, 70, 30, 0.03) 0%, transparent 18%),
+                radial-gradient(circle at 60% 85%, rgba(170, 120, 70, 0.03) 0%, transparent 23%),
+                /* Pola batik parang / kawung */
+                repeating-linear-gradient(45deg, rgba(150, 100, 60, 0.02) 0px, rgba(150, 100, 60, 0.02) 2px, transparent 2px, transparent 8px),
+                repeating-linear-gradient(135deg, rgba(130, 80, 40, 0.02) 0px, rgba(130, 80, 40, 0.02) 1px, transparent 1px, transparent 6px),
+                /* Motif titik-titik batik */
+                radial-gradient(circle at 10% 20%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 25% 45%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 40% 70%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 55% 15%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 75% 35%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 90% 55%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 15% 80%, rgba(100, 60, 30, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 50% 95%, rgba(100, 60, 30, 0.04) 1px, transparent 1px);
+            background-size: 200px 200px, 150px 150px, 100px 100px, 100px 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+            font-family: 'Cambria', 'Times New Roman', serif;
+        }
+        
+        /* Overlay tipis untuk efek kain */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 245, 235, 0.3) 0%, rgba(230, 210, 190, 0.2) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .awpage {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            width: 100%;
+            background: rgba(255, 250, 240, 0.92); /* Putih gading semi-transparan */
+            backdrop-filter: blur(1px);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(100, 60, 30, 0.25);
+            padding: 35px 40px;
+            margin: 25px auto;
+            border: 1px solid rgba(180, 140, 100, 0.3);
+        }
+        
+        /* Dekorasi batik di border halaman */
+        .awpage::after {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(150, 100, 60, 0.15);
+            border-radius: 10px;
+            pointer-events: none;
+            background-image: 
+                repeating-linear-gradient(45deg, rgba(140, 90, 50, 0.02) 0px, rgba(140, 90, 50, 0.02) 4px, transparent 4px, transparent 12px);
+            background-size: 20px 20px;
+        }
+        
+        /* Reset posisi absolut */
+        .awdiv {
+            position: relative;
+            left: 0 !important;
+            top: 0 !important;
+        }
+        
+        .awdiv > .awdiv {
+            margin-bottom: 8px;
+        }
+        
+        .awtext001, .awtext002, .awtext003, .awtext004 {
+            position: relative;
+            left: 0 !important;
+            top: 0 !important;
+            white-space: normal;
+            display: inline;
+            color: #3a2a1e;
+        }
+        
+        .awspan {
+            position: relative;
+            left: 0 !important;
+            top: 0 !important;
+            white-space: normal;
+            display: inline;
+            line-height: 1.6;
+        }
+        
+        .awtext002 {
+            font-weight: bold;
+            color: #5d3a1a;
+            margin-top: 18px;
+            display: block;
+            text-shadow: 0 1px 1px rgba(255, 240, 220, 0.8);
+        }
+        
+        .list-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin: 6px 0 6px 25px;
+        }
+        
+        .list-item .bullet {
+            font-size: 1.3rem;
+            line-height: 1.5;
+            color: #8b5a2b;
+            width: 22px;
+            text-align: right;
+        }
+        
+        .list-item .text {
+            flex: 1;
+        }
+        
+        .list-nomor {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin: 6px 0 6px 25px;
+        }
+        
+        .list-nomor .nomor {
+            font-weight: bold;
+            width: 28px;
+            text-align: right;
+            color: #5d3a1a;
+        }
+        
+        @media (max-width: 600px) {
+            .awpage {
+                padding: 20px 18px;
+            }
+        }
+        
+        .mb-2 {
+            margin-bottom: 14px;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px dashed #c9b39b;
+            margin: 25px 0;
+        }
+        
+        /* Hiasan batik tambahan di sudut */
+        .corner-batik {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.1;
+            color: #8b5a2b;
+            user-select: none;
+            pointer-events: none;
+        }
+        
+        .corner-batik-1 {
+            top: 5px;
+            left: 5px;
+            transform: rotate(15deg);
+        }
+        
+        .corner-batik-2 {
+            bottom: 5px;
+            right: 5px;
+            transform: rotate(-10deg);
+        }
+    </style>
+</head>
+<body>
 
+<!-- HALAMAN 1 -->
+<div class="awpage">
+    <div class="corner-batik corner-batik-1">☿</div>
+    <div class="corner-batik corner-batik-2">⚘</div>
+    <div class="awdiv">
+        <!-- IDENTITAS -->
+        <div class="mb-2"><span class="awspan awtext001">NAMA         : RIKSON LIFO RUMBEWAS</span></div>
+        <div class="mb-2"><span class="awspan awtext001">NIM             : 251410019</span></div>
+        <div class="mb-2"><span class="awspan awtext001">FAKULTAS : SAINS TEKNOLOGI</span></div>
+        <div class="mb-2"><span class="awspan awtext001">PRODI         : SISTEM INFORMASI</span></div>
+        <div class="mb-2"><span class="awspan awtext001">KAMPUS     : UNIVERSITAS BINA DARMA</span></div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+
+        <!-- SOAL 1 -->
+        <div class="mb-2"><span class="awspan awtext002">1. Pengertian Etika, Moralitas, Sistem Etika Kristen, dan Prinsip Utamanya</span></div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Etika</span>
+            <span class="awspan awtext001"> adalah ilmu atau kajian tentang nilai dan norma yang menentukan baik dan buruknya tindakan manusia secara rasional dan reflektif.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Moralitas</span>
+            <span class="awspan awtext001"> adalah praktik nyata dari nilai dan norma tersebut dalam perilaku sehari-hari, yaitu bagaimana manusia bertindak dalam kehidupan.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Sistem Etika Kristen</span>
+            <span class="awspan awtext001"> adalah pedoman hidup yang bersumber dari Alkitab dan iman kepada Yesus Kristus, yang menekankan kasih, kebenaran, dan ketaatan kepada kehendak Allah.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Prinsip utama etika Kristen</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Kasih</span><span class="awspan awtext001"> (Matius 22:37–39): Mengasihi Allah dan sesama.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Keadilan dan kebenaran</span><span class="awspan awtext001">.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Kesucian hidup dan tanggung jawab</span><span class="awspan awtext001">.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Teladan Yesus Kristus</span><span class="awspan awtext001"> sebagai dasar moral.</span></span>
+        </div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+
+        <!-- SOAL 2 -->
+        <div class="mb-2">
+            <span class="awspan awtext002">2. Tipologi Hubungan Iman dan Iptek dalam Sejarah Kekristenan serta Respon Kristen terhadap Teknologi Modern</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Tipologi hubungan iman dan iptek (ilmu pengetahuan dan teknologi)</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">1.</span>
+            <span class="text"><span class="awspan awtext002">Konflik</span><span class="awspan awtext001">: Iman dan iptek dianggap saling bertentangan.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">2.</span>
+            <span class="text"><span class="awspan awtext002">Independen</span><span class="awspan awtext001">: Iman dan iptek berjalan di bidang masing-masing.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">3.</span>
+            <span class="text"><span class="awspan awtext002">Dialog</span><span class="awspan awtext001">: Iman dan iptek saling berdialog dan melengkapi.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">4.</span>
+            <span class="text"><span class="awspan awtext002">Integrasi</span><span class="awspan awtext001">: Iman dan iptek dipadukan untuk memahami kebenaran secara utuh.</span></span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Tipologi respon Kristen terhadap teknologi modern</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+    </div>
+</div>
+
+<!-- HALAMAN 2 -->
+<div class="awpage">
+    <div class="corner-batik corner-batik-1">⚘</div>
+    <div class="corner-batik corner-batik-2">☿</div>
+    <div class="awdiv">
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Menerima secara kritis</span><span class="awspan awtext001">: Teknologi dipakai untuk kebaikan manusia.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Selektif dan bertanggung jawab</span><span class="awspan awtext001">: Menghindari penyalahgunaan teknologi.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Etis dan bermoral</span><span class="awspan awtext001">: Teknologi harus tunduk pada nilai kasih, keadilan, dan kemanusiaan.</span></span>
+        </div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+
+        <!-- SOAL 3 -->
+        <div class="mb-2"><span class="awspan awtext002">3. Konsep Kerukunan Antar Umat Beragama, Bentuk, dan Perannya</span></div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Kerukunan antar umat beragama</span>
+            <span class="awspan awtext001"> adalah sikap hidup damai, saling menghormati, dan bekerja sama antar pemeluk agama yang berbeda tanpa menghilangkan keyakinan masing-masing.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Bentuk-bentuk kerukunan</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">1.</span>
+            <span class="text"><span class="awspan awtext001">Kerukunan </span><span class="awspan awtext002">internal</span><span class="awspan awtext001"> (dalam satu agama).</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">2.</span>
+            <span class="text"><span class="awspan awtext001">Kerukunan </span><span class="awspan awtext002">antar umat beragama</span><span class="awspan awtext001">.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">3.</span>
+            <span class="text"><span class="awspan awtext001">Kerukunan antara umat beragama dan </span><span class="awspan awtext002">pemerintah</span><span class="awspan awtext001">.</span></span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Peran umat beragama</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Menanamkan nilai toleransi dan saling menghargai.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Menolak kekerasan atas nama agama.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Aktif dalam dialog dan kerja sama sosial.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Menjadi teladan hidup damai di masyarakat.</span></span>
+        </div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+
+        <!-- SOAL 4 -->
+        <div class="mb-2"><span class="awspan awtext002">4. Hubungan antara Ekonomi dan Ekologi serta Sikap Manusia terhadap Alam</span></div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Ekonomi dan ekologi</span>
+            <span class="awspan awtext001"> saling berkaitan karena kegiatan ekonomi bergantung pada sumber daya alam. Jika alam rusak, ekonomi juga akan terdampak.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext001">Sikap manusia terhadap alam seharusnya:</span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Bertanggung jawab</span><span class="awspan awtext001"> sebagai pengelola ciptaan Tuhan.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Menjaga keseimbangan</span><span class="awspan awtext001"> antara eksploitasi dan pelestarian.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext002">Berkelanjutan</span><span class="awspan awtext001"> agar alam tetap lestari bagi generasi mendatang.</span></span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext001">Manusia bukan penguasa mutlak alam, tetapi </span>
+            <span class="awspan awtext002">penatalayan</span>
+            <span class="awspan awtext001"> ciptaan Tuhan.</span>
+        </div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+
+        <!-- SOAL 5 -->
+        <div class="mb-2"><span class="awspan awtext002">5. Konsep Seni Bergaul, Sumber Alkitab, dan Tahap-Tahap Pergaulan</span></div>
+    </div>
+</div>
+
+<!-- HALAMAN 3 -->
+<div class="awpage">
+    <div class="corner-batik corner-batik-1">☿</div>
+    <div class="corner-batik corner-batik-2">⚘</div>
+    <div class="awdiv">
+        <div class="mb-2">
+            <span class="awspan awtext002">Seni bergaul</span>
+            <span class="awspan awtext001"> adalah kemampuan membangun hubungan sosial yang baik, sopan, bijaksana, dan saling menghargai dengan sesama.</span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Sumber Alkitab tentang pergaulan</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Amsal 13:20 – Bergaul dengan orang bijak.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">1 Korintus 15:33 – Pergaulan buruk merusak kebiasaan baik.</span></span>
+        </div>
+        <div class="list-item">
+            <span class="bullet">•</span>
+            <span class="text"><span class="awspan awtext001">Roma 12:18 – Hidup damai dengan semua orang.</span></span>
+        </div>
+        <div class="mb-2">
+            <span class="awspan awtext002">Tahap-tahap pergaulan</span>
+            <span class="awspan awtext001">:</span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">1.</span>
+            <span class="text"><span class="awspan awtext002">Pengenalan</span><span class="awspan awtext001"> – saling mengenal.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">2.</span>
+            <span class="text"><span class="awspan awtext002">Penyesuaian</span><span class="awspan awtext001"> – memahami perbedaan.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">3.</span>
+            <span class="text"><span class="awspan awtext002">Keakraban</span><span class="awspan awtext001"> – terbentuknya kepercayaan.</span></span>
+        </div>
+        <div class="list-nomor">
+            <span class="nomor">4.</span>
+            <span class="text"><span class="awspan awtext002">Kedewasaan relasi</span><span class="awspan awtext001"> – saling menghargai dan bertanggung jawab.</span></span>
+        </div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+        <div class="mb-2"><span class="awspan awtext001"> </span></div>
+    </div>
+</div>
+
+</body>
+</html>
